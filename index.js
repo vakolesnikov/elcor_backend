@@ -6,7 +6,7 @@ const PORT = 3000;
 const multer  = require("multer");
 const storageConfig = multer.diskStorage({
    destination: (req, file, cb) =>{
-      cb(null, "uploads");
+      cb(null, "images");
    },
    filename: (req, file, cb) =>{
       cb(null, file.originalname);
@@ -14,9 +14,10 @@ const storageConfig = multer.diskStorage({
 });
 
 const app = express();
+const upload = multer({storage:storageConfig});
 
-app.use(multer({storage:storageConfig}).single("filedata"));
-app.use(express.json());
+
+
 
 mongoClient.connect((err, client) => {
    if (err) {
@@ -34,15 +35,15 @@ mongoClient.connect((err, client) => {
          products
              .find({})
              .toArray((err, products) => {
-                console.log(products);
                 res.json(products)
              });
       });
 
-      app.post('/add_product', (req, res) => {
-         console.log(req.body);
+      app.post('/add_product', upload.array('images'), (req, res, next) => {
+         console.log(req.files.map(file => file.originalname));
 
-         res.json({"name": "post bob"})
+
+         // res.json({"name": "post bob"});
       });
 
       app.listen(PORT);
