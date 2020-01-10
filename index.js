@@ -28,6 +28,12 @@ mongoClient.connect((err, client) => {
          res.send('hello')
       });
 
+      app.get('/images/:imgName', (req, res) => {
+         const {imgName} = req.params;
+
+         res.sendFile(`${__dirname}/images/${imgName}`)
+      });
+
       app.get('/product_list', (req, res) => {
          const db = client.db('elcor');
          const products = db.collection('products');
