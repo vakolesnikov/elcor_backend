@@ -40,10 +40,23 @@ mongoClient.connect((err, client) => {
       });
 
       app.post('/add_product', upload.array('images'), (req, res, next) => {
-         console.log(req.files.map(file => file.originalname));
+         const {name, type, optionValues, optionType, prices, description} = req.body;
 
+         const productItem = {
+            name,
+            type,
+            options: {
+               [optionType] : optionValues.split(',')
+            },
+            prices: prices.split(','),
+            images: req.files.map(file => file.originalname),
+            description: description.split(',')
+         };
 
-         // res.json({"name": "post bob"});
+         const db = client.db('elcor');
+         const products = db.collection('products');
+
+         products.insertOne(productItem).then(() => res.json({"name": "post bob"}));
       });
 
       app.listen(PORT);
