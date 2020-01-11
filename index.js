@@ -14,13 +14,13 @@ const storageConfig = multer.diskStorage({
    }
 });
 
-// const corsOptions = {
-//    origin: '*',
-//    optionsSuccessStatus: 200
-// };
+const corsOptions = {
+   origin: '*',
+   optionsSuccessStatus: 200
+};
 
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 
 
 const upload = multer({storage:storageConfig});
