@@ -13,17 +13,17 @@ const storageConfig = multer.diskStorage({
       cb(null, file.originalname);
    }
 });
+const upload = multer({storage:storageConfig});
 
-const corsOptions = {
-   origin: '*',
-   optionsSuccessStatus: 200
-};
+// const corsOptions = {
+//    origin: '*',
+//    optionsSuccessStatus: 200
+// };
 
 const app = express();
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 
-const upload = multer({storage:storageConfig});
 
 
 
@@ -43,14 +43,15 @@ mongoClient.connect((err, client) => {
          res.sendFile(`${__dirname}/images/${imgName}`)
       });
 
-      app.get('/product_list', (req, res) => {
+      app.get('/product_list', (req, res, next) => {
          const db = client.db('elcor');
          const products = db.collection('products');
 
          products
              .find({})
              .toArray((err, products) => {
-                res.append('Access-Control-Allow-Origin', '*');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
                 res.json(products)
              });
       });
