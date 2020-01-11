@@ -41,6 +41,7 @@ mongoClient.connect((err, client) => {
          products
              .find({})
              .toArray((err, products) => {
+                res.append('Access-Control-Allow-Origin', '*');
                 res.json(products)
              });
       });
