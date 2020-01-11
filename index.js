@@ -13,7 +13,15 @@ const storageConfig = multer.diskStorage({
    }
 });
 
+let allowCrossDomain = function(req, res, next) {
+   res.header('Access-Control-Allow-Origin', "*");
+   res.header('Access-Control-Allow-Headers', "*");
+   next();
+};
+
+
 const app = express();
+app.use(allowCrossDomain);
 const upload = multer({storage:storageConfig});
 
 
