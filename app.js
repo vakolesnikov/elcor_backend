@@ -62,6 +62,17 @@ function startApp(client) {
 
     });
 
+    app.get('/remove_product/:name', (req, res) => {
+        const {name} = req.params;
+        const db = client.db('elcor');
+        const products = db.collection('products');
+        products.remove({name}).then(() => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
+            products.find({}).toArray((err, productList) => res.json(productList))
+        }).catch(err => err);
+    });
+
     app.listen(PORT)
 }
 
