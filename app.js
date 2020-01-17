@@ -10,6 +10,7 @@ const storageConfig = multer.diskStorage({
 });
 const upload = multer({storage:storageConfig});
 const app = express();
+app.use(express.json());
 const PORT = 3000;
 
 
@@ -38,9 +39,10 @@ function startApp(client) {
     });
 
     app.post('/add_product', upload.array('images'), (req, res) => {
-        const {name, type, options: optionValues, optionType, prices, descriptions} = req.body;
+        const {name, type, options: optionValues, optionType, prices, descriptions, _id} = req.body;
 
         const productItem = {
+            _id,
             name,
             type,
             options: {
@@ -62,11 +64,44 @@ function startApp(client) {
 
     });
 
-    app.get('/remove_product/:name', (req, res) => {
-        const {name} = req.params;
+    app.post('/update_product', upload.array('images'), (req, res) => {
         const db = client.db('elcor');
         const products = db.collection('products');
-        products.remove({name}).then(() => {
+        const {_id} = req.body;
+
+        products.find({_id}).toArray((err, productsList) => {
+           const oldImages = productsList[0].images;
+           const newImages = req.files.map(file => file.originalname);
+           const images = newImages.reduce((acc, image) => acc.includes(image) ? acc : [...acc, image], oldImages);
+           console.log(images);
+           const {name, type, options: optionValues, optionType, prices, descriptions, _id} = req.body;
+           const productItem = {
+                _id,
+                name,
+                type,
+                options: {
+                    [optionType] : optionValues
+                },
+                prices,
+                images,
+                descriptions
+            };
+
+            products.update({_id}, {...productItem}).then(() => {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
+                products.find({}).toArray((err, newProductList) => res.json(newProductList))
+            });
+        });
+
+    });
+
+    app.post('/remove_product', upload.none(), (req, res) => {
+        const {_id} = req.body;
+        const db = client.db('elcor');
+        const products = db.collection('products');
+
+        products.deleteOne({_id}).then(() => {
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
             products.find({}).toArray((err, productList) => res.json(productList))
