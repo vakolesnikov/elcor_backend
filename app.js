@@ -72,18 +72,17 @@ function startApp(client) {
            const oldImages = productsList[0].images;
            const newImages = req.files.map(file => file.originalname);
            const images = newImages.reduce((acc, image) => acc.includes(image) ? acc : [...acc, image], oldImages);
-           console.log(images);
            const {name, type, options: optionValues, optionType, prices, descriptions, _id} = req.body;
            const productItem = {
                 _id,
                 name,
                 type,
                 options: {
-                    [optionType] : optionValues
+                    [optionType] : Array.isArray(optionValues) ? optionValues : [optionValues]
                 },
-                prices,
-                images,
-                descriptions
+                prices: Array.isArray(prices) ? prices : [prices],
+                images: Array.isArray(images) ? images : [images],
+                descriptions: Array.isArray(descriptions) ? descriptions : [descriptions]
             };
 
             products.update({_id}, {...productItem}).then(() => {
@@ -105,6 +104,12 @@ function startApp(client) {
             res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
             products.find({}).toArray((err, productList) => res.json(productList))
         }).catch(err => err);
+    });
+
+    app.post('/test', (req, res) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
+        res.json({"hello": "world"})
     });
 
     app.listen(PORT)
