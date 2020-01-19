@@ -13,7 +13,6 @@ const app = express();
 app.use(express.json());
 const PORT = 3000;
 
-
 function startApp(client) {
     app.get('/', (req, res) => {
         res.send('Elcor backend server')
@@ -46,11 +45,11 @@ function startApp(client) {
             name,
             type,
             options: {
-                [optionType] : optionValues
+                [optionType] : Array.isArray(optionValues) ? optionValues : [optionValues]
             },
-            prices,
+            prices: Array.isArray(prices) ? prices: [prices],
             images: req.files.map(file => file.originalname),
-            descriptions
+            descriptions: Array.isArray(descriptions) ? descriptions : [descriptions]
         };
 
         const db = client.db('elcor');
