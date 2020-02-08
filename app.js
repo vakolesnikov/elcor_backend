@@ -1,5 +1,6 @@
 const express = require('express');
 const multer  = require('multer');
+const generateProductItem = require('./helpers');
 const storageConfig = multer.diskStorage({
     destination: (req, file, cb) =>{
         cb(null, "images");
@@ -38,20 +39,8 @@ function startApp(client) {
     });
 
     app.post('/add_product', upload.array('images'), (req, res) => {
-        const {name, type, options: optionValues, optionType, prices, descriptions, _id} = req.body;
-
-        const productItem = {
-            _id,
-            name,
-            type,
-            options: {
-                [optionType] : Array.isArray(optionValues) ? optionValues : [optionValues]
-            },
-            prices: Array.isArray(prices) ? prices: [prices],
-            images: req.files.map(file => file.originalname),
-            descriptions: Array.isArray(descriptions) ? descriptions : [descriptions]
-        };
-
+        const images = req.files.map(file => file.originalname);
+        const productItem = generateProductItem(req.body, images);
         const db = client.db('elcor');
         const products = db.collection('products');
 
@@ -71,19 +60,9 @@ function startApp(client) {
         products.find({_id}).toArray((err, productsList) => {
            const oldImages = productsList[0].images;
            const newImages = req.files.map(file => file.originalname);
-           const images = newImages.reduce((acc, image) => acc.includes(image) ? acc : [...acc, image], oldImages);
-           const {name, type, options: optionValues, optionType, prices, descriptions, _id} = req.body;
-           const productItem = {
-                _id,
-                name,
-                type,
-                options: {
-                    [optionType] : Array.isArray(optionValues) ? optionValues : [optionValues]
-                },
-                prices: Array.isArray(prices) ? prices : [prices],
-                images: Array.isArray(images) ? images : [images],
-                descriptions: Array.isArray(descriptions) ? descriptions : [descriptions]
-            };
+           const imagesList = newImages.reduce((acc, image) => acc.includes(image) ? acc : [...acc, image], oldImages);
+           const images =  Array.isArray(imagesList) ? imagesList : [imagesList];
+           const productItem = generateProductItem(req.body, images);
 
             products.update({_id}, {...productItem}).then(() => {
                 res.setHeader('Access-Control-Allow-Origin', '*');
